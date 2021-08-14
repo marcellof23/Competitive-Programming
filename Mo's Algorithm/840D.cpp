@@ -64,25 +64,34 @@ void mos()
       del(cur_r);
       cur_r--;
     }
+    // for (int i = 1; i <= q; i++)
+    // {
+    //   cout << cnt[i] << endl;
+    // }
+
+    // cout << "a" << endl;
+
     ll res = (ll)2 << 32 - 1;
-    for (int j = 1; j <= 100; j++)
+    for (int j = 1; j <= 90; j++)
     {
       ll tt = rnd() % (que[i].r - que[i].l + 1) + que[i].l;
       if (cnt[a[tt]] > (que[i].r - que[i].l + 1) / que[i].k)
         res = min(res, a[tt]);
     }
+
+    //cout << rnd() << endl;
     if (res == (ll)2 << 32 - 1)
       ans[que[i].idx] = -1;
     else
       ans[que[i].idx] = res;
   }
+
   for (int i = 1; i <= q; i++)
     printf("%lld\n", ans[i]);
 }
 
 int main()
 {
-
   cin >> n >> q;
   block = sqrt(n);
   for (int i = 1; i <= n; i++)
