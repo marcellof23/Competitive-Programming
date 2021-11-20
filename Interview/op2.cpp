@@ -1,6 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+const int MAXN = 1e6;
+bool vis[MAXN];
+
 struct node
 {
   int val;
@@ -10,9 +13,12 @@ struct node
 int solve(int n, int m)
 {
   set<int> visited;
+
   queue<node> q;
   node nod = {n, 0};
   q.push(nod);
+
+  vis[nod.val] = true;
   while (!q.empty())
   {
     node front_node = q.front();
@@ -31,42 +37,48 @@ int solve(int n, int m)
       return front_node.lvl + 1;
     }
 
-    if (visited.find(front_node.val * 3) == visited.end())
+    if (front_node.val * 3 <= MAXN && !vis[front_node.val * 3] && visited.find(front_node.val * 3) == visited.end())
     {
       nod.val = front_node.val * 3;
       nod.lvl = front_node.lvl + 1;
       q.push(nod);
+      vis[nod.val] = true;
     }
 
-    if (visited.find(front_node.val * 2) == visited.end())
+    if (front_node.val * 2 <= MAXN && !vis[front_node.val * 2] && visited.find(front_node.val * 2) == visited.end())
     {
       nod.val = front_node.val * 2;
       nod.lvl = front_node.lvl + 1;
       q.push(nod);
+      vis[nod.val] = true;
     }
-    if (visited.find(front_node.val + 1) == visited.end())
+    if (front_node.val + 1 <= MAXN && !vis[front_node.val + 1] && visited.find(front_node.val + 1) == visited.end())
     {
       nod.val = front_node.val + 1;
       nod.lvl = front_node.lvl + 1;
       q.push(nod);
+      vis[nod.val] = true;
     }
-    if (visited.find(front_node.val / 3) == visited.end())
+    if (!vis[front_node.val / 3] && visited.find(front_node.val / 3) == visited.end())
     {
       nod.val = front_node.val / 3;
       nod.lvl = front_node.lvl + 1;
       q.push(nod);
+      vis[nod.val] = true;
     }
-    if (visited.find(front_node.val / 2) == visited.end())
+    if (!vis[front_node.val / 2] && visited.find(front_node.val / 2) == visited.end())
     {
       nod.val = front_node.val / 2;
       nod.lvl = front_node.lvl + 1;
       q.push(nod);
+      vis[nod.val] = true;
     }
-    if (front_node.val - 1 >= 0 && visited.find(front_node.val - 1) == visited.end())
+    if (front_node.val - 1 >= 0 && !vis[front_node.val - 1] && visited.find(front_node.val - 1) == visited.end())
     {
       nod.val = front_node.val - 1;
       nod.lvl = front_node.lvl + 1;
       q.push(nod);
+      vis[nod.val] = true;
     }
   }
 }
