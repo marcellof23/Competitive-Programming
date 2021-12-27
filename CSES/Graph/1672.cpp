@@ -1,52 +1,57 @@
 #include <bits/stdc++.h>
 using namespace std;
+
 #define ll long long
+const ll INF = 1e18 + 7;
 
-const int INF = 1e9 + 7;
-vector<vector<pair<int, int>>> adj;
-vector<int> d, p;
+ll adj[505][505];
 
-void dijsktra(int s, int sz)
+int n, m, q;
+
+void floyd()
 {
-  int n = sz;
-  d.assign(n, INF);
-  p.assign(n, -1);
-  d[s] = 0;
-  priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> q;
-  q.push({0, s});
-  while (!q.empty())
+  for (int k = 0; k <= n; k++)
   {
-    int v = q.top().second;
-    int d_v = q.top().first;
-    q.pop();
-    if (d[v] != d_v)
+    for (int i = 0; i <= n; i++)
     {
-      continue;
-    }
-    for (auto e : adj[v])
-    {
-      int target = e.first;
-      int length = e.second;
-      if (d[v] + length < d[target])
+      for (int j = 0; j <= n; j++)
       {
-        d[target] = d[v] + length;
-        q.emplace(d[target], target);
+        if (adj[i][k] + adj[k][j] < adj[i][j] && adj[k][j] != INF && adj[i][k] != INF)
+        {
+          adj[i][j] = adj[i][k] + adj[k][j];
+        }
       }
     }
   }
 }
+
 int main()
 {
-  int n, m, q;
   cin >> n >> m >> q;
+
+  for (int i = 0; i < 505; i++)
+  {
+    for (int j = 0; j < 505; j++)
+      adj[i][j] = INF;
+    adj[i][i] = 0;
+  }
   for (int i = 0; i < m; i++)
   {
-    int u, v, w;
-    adj[u].emplace_back(v, w);
-    adj[v].emplace_back(u, w);
+    ll u, v, w;
+    cin >> u >> v >> w;
+    adj[u][v] = min(adj[u][v], w);
+    adj[v][u] = min(adj[v][u], w);
   }
-  for (int i = 0; i < q; i++)
+
+  floyd();
+
+  while (q--)
   {
-    int a, b;
+    int q1, q2;
+    cin >> q1 >> q2;
+    if (adj[q1][q2] >= INF)
+      cout << -1 << endl;
+    else
+      cout << adj[q1][q2] << endl;
   }
 }
