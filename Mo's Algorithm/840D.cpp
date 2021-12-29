@@ -79,7 +79,7 @@ void mos()
         res = min(res, a[tt]);
     }
 
-    //cout << rnd() << endl;
+    // cout << rnd() << endl;
     if (res == (ll)2 << 32 - 1)
       ans[que[i].idx] = -1;
     else
