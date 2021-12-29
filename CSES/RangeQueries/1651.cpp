@@ -5,7 +5,7 @@ using namespace std;
 
 const int MAXN = 2e5 + 5;
 
-int n, q, segt[4 * MAXN], arr[MAXN];
+int n, q, segt[4 * MAXN], lazy[4 * MAXN], arr[MAXN];
 
 void build(int v, int tl, int tr)
 {
@@ -18,8 +18,17 @@ void build(int v, int tl, int tr)
     int tm = (tl + tr) / 2;
     build(2 * v, tl, tm);
     build(2 * v + 1, tm + 1, tr);
-    segt[v] = segt[2 * v] + segt[2 * v + 1];
+    segt[v] = 0;
   }
+}
+
+void push(int v)
+{
+  segt[v * 2] += lazy[v];
+  lazy[v * 2] += lazy[v];
+  segt[v * 2 + 1] += lazy[v];
+  lazy[v * 2 + 1] += lazy[v];
+  lazy[v] = 0;
 }
 
 int sum(int v, int tl, int tr, int l, int r)
@@ -32,25 +41,29 @@ int sum(int v, int tl, int tr, int l, int r)
   {
     return segt[v];
   }
+  push(v);
 
   int tm = (tl + tr) / 2;
   return sum(2 * v, tl, tm, l, r) + sum(2 * v + 1, tm + 1, tr, l, r);
 }
 
-void update(int v, int tl, int tr, int pos, int newval)
+void update(int v, int tl, int tr, int l, int r, int newval)
 {
-  if (tl == tr)
+  if (l > r)
   {
-    segt[v] = newval;
+    return;
+  }
+  if (l == tl && r == tr)
+  {
+    segt[v] += newval;
+    lazy[v] += newval;
   }
   else
   {
+    push(v);
     int tm = (tl + tr) / 2;
-    if (pos <= tm)
-      update(2 * v, tl, tm, pos, newval);
-    else
-      update(2 * v + 1, tm + 1, tr, pos, newval);
-    segt[v] = segt[2 * v] + segt[2 * v + 1];
+    update(2 * v, tl, tm, l, min(r, tm), newval);
+    update(2 * v + 1, tm + 1, tr, max(l, tm + 1), r, newval);
   }
 }
 
@@ -74,17 +87,18 @@ signed main()
     cin >> op;
     if (op == 1)
     {
-      int pos, val;
-      cin >> pos >> val;
-      --pos;
-      update(1, 0, n - 1, pos, val);
+      int l, r, val;
+      cin >> l >> r >> val;
+      --l;
+      --r;
+      update(1, 0, n - 1, l, r, val);
     }
     else
     {
-      int l, r;
-      cin >> l >> r;
-      --l, --r;
-      cout << sum(1, 0, n - 1, l, r) << endl;
+      int l;
+      cin >> l;
+      --l;
+      cout << sum(1, 0, n - 1, l, l) << endl;
     }
   }
 }

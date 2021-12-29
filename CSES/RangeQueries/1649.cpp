@@ -3,6 +3,7 @@ using namespace std;
 
 #define int long long
 
+const int INF = 1e9 + 7;
 const int MAXN = 2e5 + 5;
 
 int n, q, segt[4 * MAXN], arr[MAXN];
@@ -18,23 +19,23 @@ void build(int v, int tl, int tr)
     int tm = (tl + tr) / 2;
     build(2 * v, tl, tm);
     build(2 * v + 1, tm + 1, tr);
-    segt[v] = segt[2 * v] + segt[2 * v + 1];
+    segt[v] = min(segt[2 * v], segt[2 * v + 1]);
   }
 }
 
-int sum(int v, int tl, int tr, int l, int r)
+int get_min(int v, int tl, int tr, int l, int r)
 {
-  if (tr < l || tl > r)
+  if (l > r)
   {
-    return 0;
+    return INF;
   }
-  if (l <= tl && r >= tr)
+  if (l == tl && r == tr)
   {
     return segt[v];
   }
 
   int tm = (tl + tr) / 2;
-  return sum(2 * v, tl, tm, l, r) + sum(2 * v + 1, tm + 1, tr, l, r);
+  return min(get_min(2 * v, tl, tm, l, min(r, tm)), get_min(2 * v + 1, tm + 1, tr, max(l, tm + 1), r));
 }
 
 void update(int v, int tl, int tr, int pos, int newval)
@@ -50,7 +51,7 @@ void update(int v, int tl, int tr, int pos, int newval)
       update(2 * v, tl, tm, pos, newval);
     else
       update(2 * v + 1, tm + 1, tr, pos, newval);
-    segt[v] = segt[2 * v] + segt[2 * v + 1];
+    segt[v] = min(segt[2 * v], segt[2 * v + 1]);
   }
 }
 
@@ -84,7 +85,7 @@ signed main()
       int l, r;
       cin >> l >> r;
       --l, --r;
-      cout << sum(1, 0, n - 1, l, r) << endl;
+      cout << get_min(1, 0, n - 1, l, r) << endl;
     }
   }
 }

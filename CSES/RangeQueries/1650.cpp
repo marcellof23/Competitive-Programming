@@ -18,23 +18,23 @@ void build(int v, int tl, int tr)
     int tm = (tl + tr) / 2;
     build(2 * v, tl, tm);
     build(2 * v + 1, tm + 1, tr);
-    segt[v] = segt[2 * v] + segt[2 * v + 1];
+    segt[v] = segt[2 * v] ^ segt[2 * v + 1];
   }
 }
 
-int sum(int v, int tl, int tr, int l, int r)
+int get_xor(int v, int tl, int tr, int l, int r)
 {
-  if (tr < l || tl > r)
+  if (l > r)
   {
     return 0;
   }
-  if (l <= tl && r >= tr)
+  if (l == tl && r == tr)
   {
     return segt[v];
   }
 
   int tm = (tl + tr) / 2;
-  return sum(2 * v, tl, tm, l, r) + sum(2 * v + 1, tm + 1, tr, l, r);
+  return get_xor(2 * v, tl, tm, l, min(r, tm)) ^ get_xor(2 * v + 1, tm + 1, tr, max(l, tm + 1), r);
 }
 
 void update(int v, int tl, int tr, int pos, int newval)
@@ -50,7 +50,7 @@ void update(int v, int tl, int tr, int pos, int newval)
       update(2 * v, tl, tm, pos, newval);
     else
       update(2 * v + 1, tm + 1, tr, pos, newval);
-    segt[v] = segt[2 * v] + segt[2 * v + 1];
+    segt[v] = segt[2 * v] ^ segt[2 * v + 1];
   }
 }
 
@@ -70,21 +70,9 @@ signed main()
 
   while (q--)
   {
-    int op;
-    cin >> op;
-    if (op == 1)
-    {
-      int pos, val;
-      cin >> pos >> val;
-      --pos;
-      update(1, 0, n - 1, pos, val);
-    }
-    else
-    {
-      int l, r;
-      cin >> l >> r;
-      --l, --r;
-      cout << sum(1, 0, n - 1, l, r) << endl;
-    }
+    int l, r;
+    cin >> l >> r;
+    --l, --r;
+    cout << get_xor(1, 0, n - 1, l, r) << endl;
   }
 }
