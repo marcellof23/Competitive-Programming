@@ -3,7 +3,7 @@ using namespace std;
 #define ll long long
 const int mod = 1e9 + 7;
 
-ll binpow(ll a, ll b)
+ll binpow(ll a, ll b, ll mods)
 {
   ll res = 1;
   if (b == 0)
@@ -12,9 +12,9 @@ ll binpow(ll a, ll b)
   {
     if (b & 1)
     {
-      res = res * a % mod;
+      res = res * a % mods;
     }
-    a = a * a % mod;
+    a = a * a % mods;
     b >>= 1;
   }
   return res;
@@ -28,7 +28,7 @@ int main()
   {
     int a, b, c;
     cin >> a >> b >> c;
-    ll pangkat = binpow(b, c) % mod;
-    cout << binpow(a, pangkat) << endl;
+    ll pangkat = binpow(b, c, mod - 1) % mod;
+    cout << binpow(a, pangkat, mod) << endl;
   }
 }
