@@ -1,130 +1,123 @@
 #include <bits/stdc++.h>
 using namespace std;
-
 #define ll long long
 
 const int NMAX = 2e5 + 6;
-int n, m;
-
+const ll INF = 1e18 + 7;
+vector<int> parent, depth, heavy, head, pos;
 vector<int> adj[NMAX];
-int nxt[NMAX], sub_size[NMAX], p[NMAX], chain[NMAX], num[NMAX], csz[NMAX], top[NMAX], all, cnt = 1, depth[NMAX];
-int arr[NMAX];
-ll st[4 * NMAX], mx[4 * NMAX];
+int arr[NMAX], st[4 * NMAX];
+int n, m, N;
 
-ll get_max(int v, int tl, int tr, int l, int r)
+int cur_pos;
+
+ll get_max(int a, int b)
 {
-  if (l > tr || r < tl)
+  a += N, b += N;
+  int s = 0;
+  while (a <= b)
   {
-    return 0;
-  }
-  if (l == tl && r == tr)
-  {
-    return st[v];
-  }
-
-  int tm = (tl + tr) / 2;
-  return max(get_max(2 * v, tl, tm, l, r), get_max(2 * v + 1, tm + 1, tr, l, r));
-}
-
-void update(int v, int tl, int tr, int pos, int newval)
-{
-  if (tl == tr)
-  {
-    st[v] = newval;
-  }
-  else
-  {
-    int tm = (tl + tr) / 2;
-    if (pos <= tm)
-      update(2 * v, tl, tm, pos, newval);
-    else
-      update(2 * v + 1, tm + 1, tr, pos, newval);
-    st[v] = max(st[2 * v], st[2 * v + 1]);
-  }
-}
-
-void dfs(int v, int par)
-{
-  p[v] = par;
-  sub_size[v] = 1;
-  for (int i = 0; i < adj[v].size(); i++)
-  {
-    int to = adj[v][i];
-    if (to == par)
+    if (a & 1)
     {
-      continue;
+      s = max(s, st[a]);
+      a++;
     }
-    depth[to] = depth[v] + 1;
-    dfs(to, v);
-    sub_size[v] += sub_size[to];
-    if (nxt[v] == -1 || sub_size[to] > sub_size[nxt[v]])
+    if (~b & 1)
     {
-      nxt[v] = to;
+      s = max(s, st[b]);
+      b--;
+    }
+    a >>= 1, b >>= 1;
+  }
+  return s;
+}
+
+void update(int k, int x)
+{
+  k += N;
+  st[k] = x;
+  k >>= 1;
+  while (k > 0)
+  {
+    st[k] = max(st[2 * k], st[2 * k + 1]);
+    k >>= 1;
+  }
+}
+
+int dfs(int v)
+{
+  int size = 1;
+  int max_c_size = 0;
+  for (int c : adj[v])
+  {
+    if (c != parent[v])
+    {
+      parent[c] = v, depth[c] = depth[v] + 1;
+      int c_size = dfs(c);
+      size += c_size;
+      if (c_size > max_c_size)
+        max_c_size = c_size, heavy[v] = c;
     }
   }
+  return size;
 }
 
-void hld(int v, int par)
+int query(int a, int b)
 {
-  chain[v] = cnt - 1;
-  num[v] = all++;
-  if (!csz[cnt - 1])
+  int res = 0;
+  while (head[a] != head[b])
   {
-    top[cnt - 1] = v;
-  }
-  ++csz[cnt - 1];
-  if (nxt[v] != -1)
-  {
-    hld(nxt[v], v);
-  }
-  for (int i = 0; i < adj[v].size(); i++)
-  {
-    int to = adj[v][i];
-    if (to == par || to == nxt[v])
-    {
-      continue;
-    }
-    ++cnt;
-    hld(to, v);
-  }
-}
-
-ll go(int a, int b)
-{
-  ll res = 0;
-  while (chain[a] != chain[b])
-  {
-    if (depth[top[chain[a]]] < depth[top[chain[b]]])
+    if (depth[head[a]] > depth[head[b]])
       swap(a, b);
-    int start = top[chain[a]];
-    if (num[a] == num[start] + csz[chain[a]] - 1)
-      res = max(res, mx[chain[a]]);
-    else
-      res = max(res, get_max(1, 0, n - 1, num[start], num[a]));
-    a = p[start];
+    int cur_heavy_path_max = get_max(pos[head[b]] - 1, pos[b] - 1);
+    res = max(res, cur_heavy_path_max);
+    b = parent[head[b]];
   }
+
   if (depth[a] > depth[b])
     swap(a, b);
-  res = max(res, get_max(1, 0, n - 1, num[a], num[b]));
+  int last_heavy_path_max = get_max(pos[a] - 1, pos[b] - 1);
+  res = max(res, last_heavy_path_max);
   return res;
 }
 
-void modif(int a, int b)
+void decompose(int v, int h)
 {
-  update(1, 0, n - 1, num[a], b);
-  int s = num[top[chain[a]]];
-  int e = s + csz[chain[a]] - 1;
-  mx[chain[a]] = get_max(1, 0, n - 1, s, e);
+  head[v] = h, pos[v] = cur_pos++;
+  update(pos[v] - 1, arr[v]);
+  if (heavy[v] != -1)
+    decompose(heavy[v], h);
+  for (int c : adj[v])
+  {
+    if (c != parent[v] && c != heavy[v])
+      decompose(c, c);
+  }
+}
+
+void init()
+{
+  parent = vector<int>(NMAX);
+  depth = vector<int>(NMAX);
+  heavy = vector<int>(NMAX, -1);
+  head = vector<int>(NMAX);
+  pos = vector<int>(NMAX);
+  cur_pos = 0;
+
+  dfs(1);
+  decompose(1, 1);
 }
 
 int main()
 {
   cin >> n >> m;
 
-  for (int i = 0; i < n; i++)
+  N = 1 << (int)ceil(log2(n));
+
+  for (int i = 1; i <= n; i++)
   {
     cin >> arr[i];
   }
+
   for (int i = 0; i < n - 1; i++)
   {
     int a, b;
@@ -133,19 +126,19 @@ int main()
     adj[b].push_back(a);
   }
 
-  memset(nxt, -1, sizeof(nxt));
-  dfs(0, 0);
-  hld(0, -1);
-  for (int i = 0; i < m; i++)
+  init();
+
+  while (m--)
   {
-    int op;
-    cin >> op;
+    int op, u, v;
+    cin >> op >> u >> v;
     if (op == 1)
     {
-      int x;
+      update(pos[u] - 1, v);
     }
     else
     {
+      cout << query(u, v) << endl;
     }
   }
 }
