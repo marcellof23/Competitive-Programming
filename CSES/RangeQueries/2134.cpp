@@ -1,9 +1,11 @@
+#pragma GCC target("avx,avx2,fma")
+#pragma GCC optimize("Ofast,inline") // O1 - O2 - O3 - Os - Ofast
+#pragma GCC optimize("unroll-loops")
 #include <bits/stdc++.h>
 using namespace std;
 #define ll long long
 
-const int NMAX = 2e5 + 6;
-const ll INF = 1e18 + 7;
+const int NMAX = 2e5 + 10;
 vector<int> parent, depth, heavy, head, pos;
 vector<int> adj[NMAX];
 int arr[NMAX], st[4 * NMAX];
@@ -13,17 +15,17 @@ int cur_pos;
 
 int get_max(int v, int tl, int tr, int l, int r)
 {
-  if (tl > r || tr < l)
+  if (l > r)
   {
     return 0;
   }
-  if (tl <= l && r <= tr)
+  if (tl == l && r == tr)
   {
     return st[v];
   }
 
   int tm = (tl + tr) / 2;
-  return max(get_max(2 * v, tl, tm, l, r), get_max(2 * v + 1, tm + 1, tr, l, r));
+  return max(get_max(2 * v, tl, tm, l, min(tm, r)), get_max(2 * v + 1, tm + 1, tr, max(l, tm + 1), r));
 }
 
 void update(int v, int tl, int tr, int pos, int newval)
@@ -69,14 +71,14 @@ int query(int a, int b)
   {
     if (depth[head[a]] > depth[head[b]])
       swap(a, b);
-    int cur_heavy_path_max = get_max(1, 1, n, pos[head[b]], pos[b]);
+    int cur_heavy_path_max = get_max(1, 0, n - 1, pos[head[b]], pos[b]);
     res = max(res, cur_heavy_path_max);
     b = parent[head[b]];
   }
 
   if (depth[a] > depth[b])
     swap(a, b);
-  int last_heavy_path_max = get_max(1, 1, n, pos[a] + 1, pos[b]);
+  int last_heavy_path_max = get_max(1, 0, n - 1, pos[a], pos[b]);
   res = max(res, last_heavy_path_max);
   return res;
 }
@@ -84,7 +86,7 @@ int query(int a, int b)
 void decompose(int v, int h)
 {
   head[v] = h, pos[v] = cur_pos++;
-  update(1, 1, n, pos[v], arr[v]);
+  update(1, 0, n - 1, pos[v], arr[v]);
   if (heavy[v] != -1)
     decompose(heavy[v], h);
   for (int c : adj[v])
@@ -96,23 +98,25 @@ void decompose(int v, int h)
 
 void init()
 {
-  parent = vector<int>(NMAX);
-  depth = vector<int>(NMAX);
-  heavy = vector<int>(NMAX, -1);
-  head = vector<int>(NMAX);
-  pos = vector<int>(NMAX);
-  cur_pos = 1;
+  parent = vector<int>(n);
+  depth = vector<int>(n);
+  heavy = vector<int>(n, -1);
+  head = vector<int>(n);
+  pos = vector<int>(n);
+  cur_pos = 0;
 
-  dfs(1);
-  memset(st, 0, sizeof(st));
-  decompose(1, 1);
+  dfs(0);
+  decompose(0, 0);
 }
 
 int main()
 {
+  ios_base::sync_with_stdio(false);
+  cin.tie(NULL);
+  cout.tie(NULL);
   cin >> n >> m;
 
-  for (int i = 1; i <= n; i++)
+  for (int i = 0; i < n; i++)
   {
     cin >> arr[i];
   }
@@ -121,6 +125,7 @@ int main()
   {
     int a, b;
     cin >> a >> b;
+    --a, --b;
     adj[a].push_back(b);
     adj[b].push_back(a);
   }
@@ -131,13 +136,16 @@ int main()
   {
     int op, u, v;
     cin >> op >> u >> v;
+    --u;
     if (op == 1)
     {
-      update(1, 1, n, pos[u], v);
+      update(1, 0, n - 1, pos[u], v);
     }
     else
     {
-      cout << query(u, v) << endl;
+      --v;
+      cout << query(u, v) << '\n';
     }
   }
+  return 0;
 }
