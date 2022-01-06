@@ -54,5 +54,43 @@ int main()
 
   for (int i = 1; i <= k; i++)
   {
+    char t;
+    int a, b;
+    cin >> t >> a >> b;
+    qq.push_back({t, a, b});
+    if (t == '?')
+    {
+      cords.emplace_back(a);
+    }
+    cords.emplace_back(b);
   }
+
+  sort(cords.begin(), cords.end());
+  cords.resize(unique(cords.begin(), cords.end()) - cords.begin());
+
+  int csize = cords.size();
+
+  for (int i = 1; i <= n; i++)
+  {
+    add(getpos(arr[i]), 1);
+  }
+
+  for (auto que : qq)
+  {
+    auto qt = que.t;
+    auto qa = que.a;
+    auto qb = que.b;
+
+    if (qt == '!')
+    {
+      add(getpos(arr[qa]), -1);
+      arr[qa] = qb;
+      add(getpos(arr[qa]), 1);
+    }
+    else
+    {
+      cout << (get(getpos(qb)) - get(getpos(qa) - 1)) << endl;
+    }
+  }
+  return 0;
 }

@@ -49,11 +49,11 @@ int sum(int v, int tl, int tr, int l, int r)
 
 void update(int v, int tl, int tr, int l, int r, int newval)
 {
-  if (l > r)
+  if (tr < l || tl > r)
   {
     return;
   }
-  if (l == tl && r == tr)
+  if (l <= tl && r >= tr)
   {
     segt[v] += newval;
     lazy[v] += newval;
@@ -62,8 +62,8 @@ void update(int v, int tl, int tr, int l, int r, int newval)
   {
     push(v);
     int tm = (tl + tr) / 2;
-    update(2 * v, tl, tm, l, min(r, tm), newval);
-    update(2 * v + 1, tm + 1, tr, max(l, tm + 1), r, newval);
+    update(2 * v, tl, tm, l, r, newval);
+    update(2 * v + 1, tm + 1, tr, l, r, newval);
   }
 }
 
